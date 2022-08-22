@@ -51,8 +51,14 @@ class TempChannels(commands.Cog):
         """Temporary text-channel creation (only 1 at the moment)."""
 
     @tempChannels.command(name="show")
-    async def tempChannelsShow(self, ctx: Context):
-        """Show current settings."""
+    async def tempChannelsShow(self, ctx: Context, name: str):
+        """Show current settings.
+
+        Parameters:
+        -----------
+        name: str
+            The name of the temporary channel to be changed.
+        """
         tempCh = await self.config.guild(ctx.guild).all()
         rolesAllow = [discord.utils.get(ctx.guild.roles, id=rid) for rid in tempCh[KEY_ROLE_ALLOW]]
         rolesAllow = [roleName.name for roleName in rolesAllow if roleName]
@@ -93,8 +99,14 @@ class TempChannels(commands.Cog):
 
     @tempChannels.command(name="archive")
     @checks.admin()
-    async def tempChannelsArchive(self, ctx: Context):
-        """Toggle archiving the channel after the fact."""
+    async def tempChannelsArchive(self, ctx: Context, name: str):
+        """Toggle archiving the channel after the fact.
+
+        Parameters:
+        -----------
+        name: str
+            The name of the temporary channel to be changed.
+        """
         guildConfig = self.config.guild(ctx.guild)
         archiving = await guildConfig.get_attr(KEY_ARCHIVE)()
         if archiving:
@@ -128,8 +140,14 @@ class TempChannels(commands.Cog):
         await guildConfig.get_attr(KEY_ARCHIVE).set(archiving)
 
     @tempChannels.command(name="toggle")
-    async def tempChannelsToggle(self, ctx: Context):
-        """Toggle the creation/deletion of the temporary channel."""
+    async def tempChannelsToggle(self, ctx: Context, name: str):
+        """Toggle the creation/deletion of the temporary channel.
+
+        Parameters:
+        -----------
+        name: str
+            The name of the temporary channel to be changed.
+        """
         guildConfig = self.config.guild(ctx.guild)
         enabled = await guildConfig.get_attr(KEY_ENABLED)()
         if enabled:
@@ -155,8 +173,14 @@ class TempChannels(commands.Cog):
         await guildConfig.get_attr(KEY_ENABLED).set(enabled)
 
     @tempChannels.command(name="nsfw")
-    async def tempChannelsNSFW(self, ctx: Context):
-        """Toggle NSFW requirements."""
+    async def tempChannelsNSFW(self, ctx: Context, name: str):
+        """Toggle NSFW requirements.
+
+        Parameters:
+        -----------
+        name: str
+            The name of the temporary channel to be changed.
+        """
         guildConfig = self.config.guild(ctx.guild)
         nsfw = await guildConfig.get_attr(KEY_NSFW)()
         if nsfw:
@@ -182,11 +206,13 @@ class TempChannels(commands.Cog):
         await guildConfig.get_attr(KEY_NSFW).set(nsfw)
 
     @tempChannels.command(name="start")
-    async def tempChannelsStart(self, ctx: Context, hour: int, minute: int):
+    async def tempChannelsStart(self, ctx: Context, name: str, hour: int, minute: int):
         """Set the temp channel creation time. Use 24 hour time.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         hour: int
             The hour to start the temporary channel.
         minute: int
@@ -226,11 +252,13 @@ class TempChannels(commands.Cog):
         )
 
     @tempChannels.command(name="duration")
-    async def tempChannelsDuration(self, ctx: Context, hours: int, minutes: int):
+    async def tempChannelsDuration(self, ctx: Context, name: str, hours: int, minutes: int):
         """Set the duration of the temp channel. Max 100 hours.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         hours: int
             Number of hours to make this channel available.
         minutes: int
@@ -281,11 +309,13 @@ class TempChannels(commands.Cog):
         )
 
     @tempChannels.command(name="topic")
-    async def tempChannelsTopic(self, ctx: Context, *, topic: str):
+    async def tempChannelsTopic(self, ctx: Context, name: str, *, topic: str):
         """Set the topic of the channel.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         topic: str
             The topic of the channel.
         """
@@ -312,41 +342,45 @@ class TempChannels(commands.Cog):
         )
 
     @tempChannels.command(name="name")
-    async def tempChannelsName(self, ctx, name: str):
+    async def tempChannelsName(self, ctx, name: str, channelName: str):
         """Set the #name of the channel.
 
         Parameters:
         -----------
         name: str
+            The name of the temporary channel to be changed.
+        channelName: str
             The #name of the channel, which is shown on the left panel of Discord.
         """
-        if len(name) > MAX_CH_NAME:
+        if len(channelName) > MAX_CH_NAME:
             await ctx.send(
                 ":negative_squared_cross_mark: TempChannel - Name: " "Name is too long. Try again."
             )
             return
 
-        await self.config.guild(ctx.guild).get_attr(KEY_CH_NAME).set(name)
+        await self.config.guild(ctx.guild).get_attr(KEY_CH_NAME).set(channelName)
 
         self.logger.info(
             "%s (%s) set the channel name to " "%s" " on %s (%s)",
             ctx.author.name,
             ctx.author.id,
-            name,
+            channelName,
             ctx.guild.name,
             ctx.guild.id,
         )
 
         await ctx.send(
-            ":white_check_mark: TempChannel - Name: Channel name set " "to: ``{0}``".format(name)
+            ":white_check_mark: TempChannel - Name: Channel name set " "to: ``{0}``".format(channelName)
         )
 
     @tempChannels.command(name="position", aliases=["pos"])
-    async def tempChannelsPosition(self, ctx, position: int):
+    async def tempChannelsPosition(self, ctx, name: str, position: int):
         """Set the position of the text channel in the list.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         position: int
             The position where you want the temp channel to appear on the channel
             list.
@@ -376,12 +410,14 @@ class TempChannels(commands.Cog):
 
     @tempChannels.command(name="category", pass_context=True, no_pm=True)
     async def tempChannelsCategory(
-        self, ctx: Context, *, category: discord.CategoryChannel = None
+            self, ctx: Context, name: str, *, category: discord.CategoryChannel = None
     ):
         """Set the parent category of the text channel.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         category: discord.CategoryChannel
             The category you wish to nest the temporary channel under.
         """
@@ -413,11 +449,13 @@ class TempChannels(commands.Cog):
             )
 
     @tempChannels.command(name="allowadd", aliases=["aa"])
-    async def tempChannelsAllowAdd(self, ctx: Context, *, role: discord.Role):
+    async def tempChannelsAllowAdd(self, ctx: Context, name: str, *, role: discord.Role):
         """Add a role to allow access to the channel.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         role: discord.Role
             The role you wish to allow access to the temporary channel.
         """
@@ -443,11 +481,13 @@ class TempChannels(commands.Cog):
                 )
 
     @tempChannels.command(name="allowremove", aliases=["allowdelete", "ad", "ar"])
-    async def tempChannelsAllowRemove(self, ctx: Context, *, role: discord.Role):
+    async def tempChannelsAllowRemove(self, ctx: Context, name: str, *, role: discord.Role):
         """Remove a role from being able access the temporary channel.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         role: discord.Role
             The role you wish to remove access from.
         """
@@ -473,7 +513,7 @@ class TempChannels(commands.Cog):
                 )
 
     @tempChannels.command(name="denyadd", aliases=["da"])
-    async def tempChannelsDenyAdd(self, ctx: Context, *, role: discord.Role):
+    async def tempChannelsDenyAdd(self, ctx: Context, name: str, *, role: discord.Role):
         """Add a role to block sending message to the channel.
 
         This role should be HIGHER in the role hierarchy than the roles in
@@ -481,6 +521,8 @@ class TempChannels(commands.Cog):
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         role: discord.Role
             The role you wish to deny sending permissions in the temporary channel.
         """
@@ -507,11 +549,13 @@ class TempChannels(commands.Cog):
                 )
 
     @tempChannels.command(name="denyremove", aliases=["denydelete", "dd", "dr"])
-    async def tempChannelsDenyRemove(self, ctx: Context, *, role: discord.Role):
+    async def tempChannelsDenyRemove(self, ctx: Context, name: str, *, role: discord.Role):
         """Remove role from being blocked sending to the channel.
 
         Parameters:
         -----------
+        name: str
+            The name of the temporary channel to be changed.
         role: discord.Role
             The role you wish to remove from the deny list.
         """
@@ -537,8 +581,14 @@ class TempChannels(commands.Cog):
                 )
 
     @tempChannels.command(name="delete", aliases=["remove", "del", "rm"])
-    async def tempChannelsDelete(self, ctx: Context):
-        """Deletes the temp channel, if it exists."""
+    async def tempChannelsDelete(self, ctx: Context, name: str):
+        """Deletes the temp channel, if it exists.
+
+        Parameters:
+        -----------
+        name: str
+            The name of the temporary channel to be changed.
+        """
         guildConfig = self.config.guild(ctx.guild)
         channelId = await guildConfig.get_attr(KEY_CH_ID)()
         channelCreated = await guildConfig.get_attr(KEY_CH_CREATED)()
